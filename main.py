@@ -201,18 +201,19 @@ def convert_to_symbols(message):
 user_languages = {}
 
 # Function to handle incoming messages
-@bot.message_handler(commands=['ocr'])
+@bot.message_handler(commands=['textphoto'])
 def handle_ocr(message):
     # Проверка наличия кода языка в команде пользователя
     if len(message.text.split(' ')) > 1:
         lang_code = message.text.split(' ', 1)[1].strip()
         if is_valid_language(lang_code):
             user_languages[message.chat.id] = lang_code
-            bot.reply_to(message, f"Язык OCR установлен на {lang_code}. Пожалуйста, отправьте фото для извлечения текста.")
+            bot.reply_to(message, f"Язык установлен на {lang_code}. Пожалуйста, отправьте фото для извлечения текста.")
+            bot.register_next_step_handler(message, textphoto)
         else:
             bot.reply_to(message, "Неверный код языка. Пожалуйста, укажите допустимый код языка.")
     else:
-        bot.reply_to(message, "Используйте команду '/ocr <код_языка>' для установки языка OCR. Например, '/ocr eng' для английского.")
+        bot.reply_to(message, "Используйте команду '/textphoto <код_языка>' для установки языка. Например, '/textphoto eng' для английского.")
 
 # Функция для проверки кода языка
 def is_valid_language(lang_code):
@@ -224,8 +225,7 @@ def is_valid_language(lang_code):
         return False
 
 # Функция для обработки входящих изображений и извлечения текста
-@bot.message_handler(content_types=['textphoto'])
-def handle_image(message):
+def textphoto(message):
     user_id = message.chat.id
     if user_id in user_languages:
         lang = user_languages[user_id]
@@ -235,7 +235,7 @@ def handle_image(message):
     extracted_text = extract_text_from_image(message, lang)
 
     # Отправляем извлеченный текст пользователю
-    bot.reply_to(message, f"Текст из картинки:\n{extracted_text}")
+    bot.reply_to(message, f"Текст из картинки:\n\n{extracted_text}")
 # Функция для извлечения текста из изображения
 def extract_text_from_image(message, lang='eng'):
     # Получаем идентификатор фото самого большого размера
