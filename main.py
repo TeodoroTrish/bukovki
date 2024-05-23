@@ -4,7 +4,7 @@ from telebot import types
 from urllib import request
 from PIL import Image  
 from io import BytesIO
-bot = telebot.TeleBot("7080956095:AAGCuVzjOKjzvlOxRpCkkV_0qC4RKqn8Vc4")
+bot = telebot.TeleBot("YOUR_API_KEY")
 
 class User:
     def __init__(self, chat_id, level=None, word=None, masked_word=None, tries=5):
