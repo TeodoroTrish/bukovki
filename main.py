@@ -4,9 +4,7 @@ from telebot import types
 from urllib import request
 from PIL import Image  
 from io import BytesIO
-import pytesseract
-
-bot = telebot.TeleBot("TELEBOT_API")
+bot = telebot.TeleBot("7080956095:AAGCuVzjOKjzvlOxRpCkkV_0qC4RKqn8Vc4")
 
 class User:
     def __init__(self, chat_id, level=None, word=None, masked_word=None, tries=5):
@@ -197,57 +195,4 @@ def convert_to_symbols(message):
     os.remove(file_path)
 
 
-# Dictionary to store user language preferences (can be saved in a database for persistence)
-user_languages = {}
-
-# Function to handle incoming messages
-@bot.message_handler(commands=['textphoto'])
-def handle_ocr(message):
-    # Проверка наличия кода языка в команде пользователя
-    if len(message.text.split(' ')) > 1:
-        lang_code = message.text.split(' ', 1)[1].strip()
-        if is_valid_language(lang_code):
-            user_languages[message.chat.id] = lang_code
-            bot.reply_to(message, f"Язык установлен на {lang_code}. Пожалуйста, отправьте фото для извлечения текста.")
-            bot.register_next_step_handler(message, textphoto)
-        else:
-            bot.reply_to(message, "Неверный код языка. Пожалуйста, укажите допустимый код языка.")
-    else:
-        bot.reply_to(message, "Используйте команду '/textphoto <код_языка>' для установки языка. Например, '/textphoto eng' для английского.")
-
-# Функция для проверки кода языка
-def is_valid_language(lang_code):
-    # Добавьте свою логику проверки здесь для кодов языка
-    valid_languages = ["eng", "deu", "fra", "spa", "ita", "por", "nld", "rus", "jpn", "kor", "chi_sim", "chi_tra"]  # Примеры допустимых кодов языков
-    if lang_code in valid_languages:
-        return True
-    else:
-        return False
-
-# Функция для обработки входящих изображений и извлечения текста
-def textphoto(message):
-    user_id = message.chat.id
-    if user_id in user_languages:
-        lang = user_languages[user_id]
-    else:
-        lang = 'eng'  # Язык по умолчанию, если пользователь не укажет иной
-
-    extracted_text = extract_text_from_image(message, lang)
-
-    # Отправляем извлеченный текст пользователю
-    bot.reply_to(message, f"Текст из картинки:\n\n{extracted_text}")
-# Функция для извлечения текста из изображения
-def extract_text_from_image(message, lang='eng'):
-    # Получаем идентификатор фото самого большого размера
-    file_id = message.photo[-1].file_id
-    # Загружаем фото
-    file_info = bot.get_file(file_id)
-    downloaded_file = bot.download_file(file_info.file_path)
-
-    # Используем BytesIO для работы с файлом в памяти
-    image = Image.open(BytesIO(downloaded_file))
-    # Используем Tesseract OCR для извлечения текста из изображения с указанным языком
-    text = pytesseract.image_to_string(image, lang=lang)
-
-    return text
 bot.polling()
